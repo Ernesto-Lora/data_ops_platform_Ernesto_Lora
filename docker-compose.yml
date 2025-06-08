@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:15
+    container_name: etl_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - etl_net
+
+  etl:
+    build:
+      context: ./etl
+    container_name: etl_runner
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    networks:
+      - etl_net
+    command: python etl_script.py
+
+volumes:
+  pgdata:
+
+networks:
+  etl_net:
